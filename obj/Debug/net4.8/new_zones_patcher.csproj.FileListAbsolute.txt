@@ -1,0 +1,13 @@
+I:\new_zones_patcher\new_zones_patcher\obj\Debug\net4.8\new_zones_patcher.csproj.AssemblyReference.cache
+I:\new_zones_patcher\new_zones_patcher\obj\Debug\net4.8\new_zones_patcher.csproj.SuggestedBindingRedirects.cache
+I:\new_zones_patcher\new_zones_patcher\obj\Debug\net4.8\new_zones_patcher.GeneratedMSBuildEditorConfig.editorconfig
+I:\new_zones_patcher\new_zones_patcher\obj\Debug\net4.8\new_zones_patcher.AssemblyInfoInputs.cache
+I:\new_zones_patcher\new_zones_patcher\obj\Debug\net4.8\new_zones_patcher.AssemblyInfo.cs
+I:\new_zones_patcher\new_zones_patcher\obj\Debug\net4.8\new_zones_patcher.csproj.CoreCompileInputs.cache
+I:\new_zones_patcher\new_zones_patcher\bin\Debug\net4.8\new_zones_patcher.exe.config
+I:\new_zones_patcher\new_zones_patcher\bin\Debug\net4.8\new_zones_patcher.exe
+I:\new_zones_patcher\new_zones_patcher\bin\Debug\net4.8\new_zones_patcher.pdb
+I:\new_zones_patcher\new_zones_patcher\bin\Debug\net4.8\ManagedBlam.dll
+I:\new_zones_patcher\new_zones_patcher\obj\Debug\net4.8\new_zones_patcher.csproj.CopyComplete
+I:\new_zones_patcher\new_zones_patcher\obj\Debug\net4.8\new_zones_patcher.exe
+I:\new_zones_patcher\new_zones_patcher\obj\Debug\net4.8\new_zones_patcher.pdb

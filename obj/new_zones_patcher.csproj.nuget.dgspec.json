@@ -1,0 +1,52 @@
+{
+  "format": 1,
+  "restore": {
+    "I:\\new_zones_patcher\\new_zones_patcher\\new_zones_patcher.csproj": {}
+  },
+  "projects": {
+    "I:\\new_zones_patcher\\new_zones_patcher\\new_zones_patcher.csproj": {
+      "version": "1.0.0",
+      "restore": {
+        "projectUniqueName": "I:\\new_zones_patcher\\new_zones_patcher\\new_zones_patcher.csproj",
+        "projectName": "new_zones_patcher",
+        "projectPath": "I:\\new_zones_patcher\\new_zones_patcher\\new_zones_patcher.csproj",
+        "packagesPath": "C:\\Users\\Jake\\.nuget\\packages\\",
+        "outputPath": "I:\\new_zones_patcher\\new_zones_patcher\\obj\\",
+        "projectStyle": "PackageReference",
+        "configFilePaths": [
+          "C:\\Users\\Jake\\AppData\\Roaming\\NuGet\\NuGet.Config",
+          "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
+        ],
+        "originalTargetFrameworks": [
+          "net4.8"
+        ],
+        "sources": {
+          "C:\\Program Files (x86)\\Microsoft SDKs\\NuGetPackages\\": {},
+          "https://api.nuget.org/v3/index.json": {}
+        },
+        "frameworks": {
+          "net48": {
+            "targetAlias": "net4.8",
+            "projectReferences": {}
+          }
+        },
+        "warningProperties": {
+          "warnAsError": [
+            "NU1605"
+          ]
+        }
+      },
+      "frameworks": {
+        "net48": {
+          "targetAlias": "net4.8",
+          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\7.0.101\\RuntimeIdentifierGraph.json"
+        }
+      },
+      "runtimes": {
+        "win7-x86": {
+          "#import": []
+        }
+      }
+    }
+  }
+}
