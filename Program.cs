@@ -12,6 +12,7 @@ class MB_Zones
         // Variables
         string h3ek_path = @"C:\Program Files (x86)\Steam\steamapps\common\H3EK";
         string xml_path = @"G:\Steam\steamapps\common\H2EK\04a_gasgiant.xml";
+        string scen_path = @"C:\Program Files (x86)\Steam\steamapps\common\H3EK\tags\halo_2\levels\singleplayer\04a_gasgiant\04a_gasgiant.scenario";
 
         ManagedBlamSystem.InitializeProject(InitializationType.TagsOnly, h3ek_path);
         Convert_XML(xml_path);
@@ -303,6 +304,7 @@ class MB_Zones
 
     static void PatchTag(string fieldPath, string line)
     {
+        // Managedblam to insert new field entries goes here
         int i = 0;
         i++;
     }
