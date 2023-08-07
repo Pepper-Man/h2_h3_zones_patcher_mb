@@ -169,6 +169,7 @@ class MB_Zones
                 areas = false;
                 fposDataCount = 0;
                 fposIndex = 0;
+                totalFposCount = 0;
                 continue;
             }
             else if (areas)
