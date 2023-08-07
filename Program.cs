@@ -338,6 +338,7 @@ class MB_Zones
                 if (part == -1) // Add a new area
                 {
                     ((Bungie.Tags.TagFieldBlock)((Bungie.Tags.TagFieldBlock)tagFile.Fields[83]).Elements[zones_max_index].Fields[4]).AddElement();
+                    tagFile.Save();
                 }
                 if (part == 0) // Area name
                 {
