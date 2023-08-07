@@ -4,7 +4,6 @@ using System.IO;
 using System.Xml;
 using System.Linq;
 using System.Collections.Generic;
-using System.Text.RegularExpressions;
 
 class MB_Zones
 {
@@ -139,6 +138,7 @@ class MB_Zones
         int fposIndex = -1;
         int areaDataCount = 0;
         int fposDataCount = 0;
+        int totalAreaCount = 0;
         int fposFlagLineSkip = 0;
         bool previousWasActualFlag = false;
 
@@ -150,7 +150,7 @@ class MB_Zones
             {
                 zone++;
                 Console.WriteLine(line.Trim());
-                PatchTag("zone", line.Substring(line.IndexOf(' ') + 1).Trim());
+                PatchTag("zone", line.Substring(line.IndexOf(' ') + 1).Trim(), 0, 0);
                 continue;
             }
             else if (line.Contains("Areas:"))
@@ -159,6 +159,7 @@ class MB_Zones
                 fpos = false;
                 areaIndex = 0;
                 areaDataCount = 0;
+                totalAreaCount = 0;
                 continue;
             }
             else if (line.Contains("Firing Positions:"))
@@ -178,10 +179,12 @@ class MB_Zones
                 }
                 if (areaDataCount == 0)
                 {
+                    // Add new area
+                    PatchTag("area", line, -1, 0);
                     // Patch area name
                     string fieldPath = $"scenario_struct_definition[0].zones[{zone}].areas[{areaIndex}].name";
                     Console.WriteLine($"patching {line.Trim()}");
-                    //PatchTag(fieldPath, line.Trim());
+                    PatchTag("area", line.Trim(), 0, totalAreaCount);
                     areaDataCount++;
                 }
                 else if (areaDataCount == 1)
@@ -189,7 +192,7 @@ class MB_Zones
                     // Patch area flags
                     string fieldPath = $"scenario_struct_definition[0].zones[{zone}].areas[{areaIndex}].area flags";
                     Console.WriteLine("area flags");
-                    //PatchTag(fieldPath, line.Trim());
+                    PatchTag("area", line.Trim(), 1, totalAreaCount);
                     areaDataCount++;
                     if (line.Trim() != "0")
                     {
@@ -213,9 +216,10 @@ class MB_Zones
                     // Patch manual reference frame
                     string fieldPath = $"scenario_struct_definition[0].zones[{zone}].areas[{areaIndex}].manual reference frame";
                     Console.WriteLine($"manual ref frame = {line.Trim()}");
-                    //PatchTag(fieldPath, ",-1");
+                    PatchTag("area", line.Trim(), 4, totalAreaCount);
                     areaDataCount = 0;
                     areaIndex++;
+                    totalAreaCount++;
                 }
             }
             else if (fpos)
@@ -304,7 +308,8 @@ class MB_Zones
         }
     }
 
-    static void PatchTag(string type, string line)
+    // Runs ManagedBlam functions to add the data into the H3 scenario. Part parameter is used to keep track of the sub-fields for area/fpos
+    static void PatchTag(string type, string line, int part, int area_count)
     {
         string scen_path = @"halo_2\levels\singleplayer\04a_gasgiant\04a_gasgiant";
         var tag_path = Bungie.Tags.TagPath.FromPathAndType(scen_path, "scnr*");
@@ -321,10 +326,39 @@ class MB_Zones
                 var zone_name = (Bungie.Tags.TagFieldElementString)((Bungie.Tags.TagFieldBlock)tagFile.Fields[83]).Elements[zones_max_index + 1].Fields[0];
                 zone_name.Data = line;
                 tagFile.Save();
-                
+
             }
         }
+        else if (type == "area")
+        {
+            using (var tagFile = new Bungie.Tags.TagFile(tag_path))
+            {
+                int zones_max_index = zones_max_index = ((Bungie.Tags.TagFieldBlock)tagFile.Fields[83]).Elements.Count() - 1;
 
-        
+                if (part == -1) // Add a new area
+                {
+                    ((Bungie.Tags.TagFieldBlock)((Bungie.Tags.TagFieldBlock)tagFile.Fields[83]).Elements[zones_max_index].Fields[4]).AddElement();
+                }
+                if (part == 0) // Area name
+                {
+                    var area_name = (Bungie.Tags.TagFieldElementString)((Bungie.Tags.TagFieldBlock)((Bungie.Tags.TagFieldBlock)tagFile.Fields[83]).Elements[zones_max_index].Fields[4]).Elements[area_count].Fields[0];
+                    area_name.Data = line;
+                }
+                else if (part == 1) // Area flags
+                {
+                    var area_name = (Bungie.Tags.TagFieldFlags)((Bungie.Tags.TagFieldBlock)((Bungie.Tags.TagFieldBlock)tagFile.Fields[83]).Elements[zones_max_index].Fields[4]).Elements[area_count].Fields[1];
+                    area_name.RawValue = uint.Parse(line);
+                }
+                else if (part == 4) // Area reference frame
+                {
+                    if (line != "0")
+                    {
+                        var reference_frame = (Bungie.Tags.TagFieldBlockIndex)((Bungie.Tags.TagFieldBlock)((Bungie.Tags.TagFieldBlock)tagFile.Fields[83]).Elements[zones_max_index].Fields[4]).Elements[area_count].Fields[9];
+                        reference_frame.Value = int.Parse(line);
+                    }
+                }
+                tagFile.Save();
+            }
+        }
     }
 }
