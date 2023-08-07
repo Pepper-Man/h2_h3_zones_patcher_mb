@@ -138,6 +138,7 @@ class MB_Zones
         int fposIndex = -1;
         int areaDataCount = 0;
         int fposDataCount = 0;
+        int totalFposCount = 0;
         int totalAreaCount = 0;
         int fposFlagLineSkip = 0;
         bool previousWasActualFlag = false;
@@ -233,6 +234,7 @@ class MB_Zones
                 {
                     // Patch firing position index
                     Console.WriteLine($"firing position {line.Trim()} patch start");
+                    PatchTag("fpos", line.Trim(), 0, totalFposCount);
                     fposDataCount++;
                 }
                 else if (fposDataCount == 1)
@@ -240,7 +242,7 @@ class MB_Zones
                     // Patch firing position position
                     string fieldPath = $"scenario_struct_definition[0].zones[{zone}].firing positions[{fposIndex}].position (local)";
                     Console.WriteLine("patching position");
-                    //PatchTag(fieldPath, line.Trim());
+                    PatchTag("fpos", line.Trim(), 1, totalFposCount);
                     fposDataCount++;
                 }
                 else if (fposDataCount == 2)
@@ -248,7 +250,6 @@ class MB_Zones
                     // Patch firing position ref frame
                     string fieldPath = $"scenario_struct_definition[0].zones[{zone}].firing positions[{fposIndex}].reference frame";
                     Console.WriteLine("patching ref frame");
-                    //PatchTag(fieldPath, ",-1");
                     fposDataCount++;
                 }
                 else if (fposDataCount == 3)
@@ -256,7 +257,7 @@ class MB_Zones
                     // Patch firing position flags
                     string fieldPath = $"scenario_struct_definition[0].zones[{zone}].firing positions[{fposIndex}].flags";
                     Console.WriteLine("patching flags");
-                    //PatchTag(fieldPath, Regex.Replace(line.Trim(), "[^0-9]", ""));
+                    PatchTag("fpos", line.Trim(), 3, totalFposCount);
                     if (int.Parse(line.Trim()) >= 90)
                     {
                         fposFlagLineSkip = 4;
@@ -284,7 +285,7 @@ class MB_Zones
                     // Patch firing position area
                     string fieldPath = $"scenario_struct_definition[0].zones[{zone}].firing positions[{fposIndex}].area";
                     Console.WriteLine("patching area");
-                    //PatchTag(fieldPath, "," + line.Trim());
+                    PatchTag("fpos", line.Trim(), 4, totalFposCount);
                     fposDataCount++;
                 }
                 else if (fposDataCount == 5)
@@ -292,7 +293,7 @@ class MB_Zones
                     // Patch firing position cluster index
                     string fieldPath = $"scenario_struct_definition[0].zones[{zone}].firing positions[{fposIndex}].cluster index";
                     Console.WriteLine("patching cluster index");
-                    //PatchTag(fieldPath, line.Trim());
+                    PatchTag("fpos", line.Trim(), 5, totalFposCount);
                     fposDataCount++;
                 }
                 else if (fposDataCount == 6)
@@ -300,16 +301,17 @@ class MB_Zones
                     // Patch firing position normal
                     string fieldPath = $"scenario_struct_definition[0].zones[{zone}].firing positions[{fposIndex}].normal";
                     Console.WriteLine("patching normal");
-                    //PatchTag(fieldPath, line.TrimEnd('\n'));
+                    PatchTag("fpos", line.Trim(), 6, totalFposCount);
                     fposDataCount = 0;
                     fposIndex++;
+                    totalFposCount++;
                 }
             }
         }
     }
 
     // Runs ManagedBlam functions to add the data into the H3 scenario. Part parameter is used to keep track of the sub-fields for area/fpos
-    static void PatchTag(string type, string line, int part, int area_count)
+    static void PatchTag(string type, string line, int part, int count)
     {
         string scen_path = @"halo_2\levels\singleplayer\04a_gasgiant\04a_gasgiant";
         var tag_path = Bungie.Tags.TagPath.FromPathAndType(scen_path, "scnr*");
@@ -326,7 +328,6 @@ class MB_Zones
                 var zone_name = (Bungie.Tags.TagFieldElementString)((Bungie.Tags.TagFieldBlock)tagFile.Fields[83]).Elements[zones_max_index + 1].Fields[0];
                 zone_name.Data = line;
                 tagFile.Save();
-
             }
         }
         else if (type == "area")
@@ -342,21 +343,72 @@ class MB_Zones
                 }
                 if (part == 0) // Area name
                 {
-                    var area_name = (Bungie.Tags.TagFieldElementString)((Bungie.Tags.TagFieldBlock)((Bungie.Tags.TagFieldBlock)tagFile.Fields[83]).Elements[zones_max_index].Fields[4]).Elements[area_count].Fields[0];
+                    var area_name = (Bungie.Tags.TagFieldElementString)((Bungie.Tags.TagFieldBlock)((Bungie.Tags.TagFieldBlock)tagFile.Fields[83]).Elements[zones_max_index].Fields[4]).Elements[count].Fields[0];
                     area_name.Data = line;
                 }
                 else if (part == 1) // Area flags
                 {
-                    var area_name = (Bungie.Tags.TagFieldFlags)((Bungie.Tags.TagFieldBlock)((Bungie.Tags.TagFieldBlock)tagFile.Fields[83]).Elements[zones_max_index].Fields[4]).Elements[area_count].Fields[1];
+                    var area_name = (Bungie.Tags.TagFieldFlags)((Bungie.Tags.TagFieldBlock)((Bungie.Tags.TagFieldBlock)tagFile.Fields[83]).Elements[zones_max_index].Fields[4]).Elements[count].Fields[1];
                     area_name.RawValue = uint.Parse(line);
                 }
                 else if (part == 4) // Area reference frame
                 {
                     if (line != "0")
                     {
-                        var reference_frame = (Bungie.Tags.TagFieldBlockIndex)((Bungie.Tags.TagFieldBlock)((Bungie.Tags.TagFieldBlock)tagFile.Fields[83]).Elements[zones_max_index].Fields[4]).Elements[area_count].Fields[9];
+                        var reference_frame = (Bungie.Tags.TagFieldBlockIndex)((Bungie.Tags.TagFieldBlock)((Bungie.Tags.TagFieldBlock)tagFile.Fields[83]).Elements[zones_max_index].Fields[4]).Elements[count].Fields[9];
                         reference_frame.Value = int.Parse(line);
                     }
+                }
+                tagFile.Save();
+            }
+        }
+        else if (type == "fpos")
+        {
+            using (var tagFile = new Bungie.Tags.TagFile(tag_path))
+            {
+                int zones_max_index = zones_max_index = ((Bungie.Tags.TagFieldBlock)tagFile.Fields[83]).Elements.Count() - 1;
+
+                if (part == 0)
+                {
+                    // Add a new firing position
+                    ((Bungie.Tags.TagFieldBlock)((Bungie.Tags.TagFieldBlock)tagFile.Fields[83]).Elements[zones_max_index].Fields[3]).AddElement();
+                    tagFile.Save();
+                }
+                else if (part == 1)
+                {
+                    // Add xyz position
+                    var xyz_pos = (Bungie.Tags.TagFieldElementArraySingle)((Bungie.Tags.TagFieldBlock)((Bungie.Tags.TagFieldBlock)tagFile.Fields[83]).Elements[zones_max_index].Fields[3]).Elements[count].Fields[1];
+                    // Splits the string into a float array of xyz coordinates
+                    xyz_pos.Data = line.Split(',').Select(valueString => float.TryParse(valueString, out float floatValue) ? floatValue : float.NaN).ToArray();
+                }
+                else if (part == 2)
+                {
+                    // Add reference frame - might not need to do this?
+                }
+                else if (part == 3)
+                {
+                    // Add flags
+                    var fpos_flags = (Bungie.Tags.TagFieldFlags)((Bungie.Tags.TagFieldBlock)((Bungie.Tags.TagFieldBlock)tagFile.Fields[83]).Elements[zones_max_index].Fields[3]).Elements[count].Fields[4];
+                    fpos_flags.RawValue = uint.Parse(line);
+                }
+                else if (part == 4)
+                {
+                    // Add area reference
+                    var area_ref = (Bungie.Tags.TagFieldBlockIndex)((Bungie.Tags.TagFieldBlock)((Bungie.Tags.TagFieldBlock)tagFile.Fields[83]).Elements[zones_max_index].Fields[3]).Elements[count].Fields[6];
+                    area_ref.Value = int.Parse(line);
+                }
+                else if (part == 5)
+                {
+                    // Add cluster index
+                    var cluster_index = (Bungie.Tags.TagFieldElementInteger)((Bungie.Tags.TagFieldBlock)((Bungie.Tags.TagFieldBlock)tagFile.Fields[83]).Elements[zones_max_index].Fields[3]).Elements[count].Fields[7];
+                    cluster_index.Data= int.Parse(line);
+                }
+                else if (part == 6)
+                {
+                    // Add normal directions
+                    var normal_dir = (Bungie.Tags.TagFieldElementArraySingle)((Bungie.Tags.TagFieldBlock)((Bungie.Tags.TagFieldBlock)tagFile.Fields[83]).Elements[zones_max_index].Fields[3]).Elements[count].Fields[10];
+                    // Splits the string into a float array of xyz coordinates
+                    normal_dir.Data = line.Split(',').Select(valueString => float.TryParse(valueString, out float floatValue) ? floatValue : float.NaN).ToArray();
                 }
                 tagFile.Save();
             }
