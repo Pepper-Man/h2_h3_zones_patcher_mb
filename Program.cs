@@ -250,11 +250,15 @@ class MB_Zones
                     string fieldPath = $"scenario_struct_definition[0].zones[{zone}].firing positions[{fposIndex}].flags";
                     Console.WriteLine("patching flags");
                     PatchTag(fieldPath, Regex.Replace(line.Trim(), "[^0-9]", ""));
-                    if (int.Parse(line.Trim()) > 75)
+                    if (int.Parse(line.Trim()) >= 90)
+                    {
+                        fposFlagLineSkip = 4;
+                    }
+                    else if (int.Parse(line.Trim()) > 70)
                     {
                         fposFlagLineSkip = 3;
                     }
-                    else if (int.Parse(line.Trim()) < 10 && int.Parse(line.Trim()) >= 1)
+                    else if (int.Parse(line.Trim()) < 9 && int.Parse(line.Trim()) >= 1)
                     {
                         fposFlagLineSkip = 1;
                     }
@@ -299,6 +303,7 @@ class MB_Zones
 
     static void PatchTag(string fieldPath, string line)
     {
-        Console.WriteLine("Patching " + line);
+        int i = 0;
+        i++;
     }
 }
