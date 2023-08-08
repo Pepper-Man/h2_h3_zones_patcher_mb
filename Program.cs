@@ -4,6 +4,15 @@ using System.IO;
 using System.Xml;
 using System.Linq;
 using System.Collections.Generic;
+using Bungie.Tags;
+
+class Zone
+{
+    public string ZoneName { get; set; }
+    public int AreasCount { get; set; }
+    public int FposCount { get; set; }
+}
+
 
 class MB_Zones
 {
@@ -14,7 +23,6 @@ class MB_Zones
         string xml_path = @"G:\Steam\steamapps\common\H2EK\04a_gasgiant.xml";
 
         ManagedBlamSystem.InitializeProject(InitializationType.TagsOnly, h3ek_path);
-
         Convert_XML(xml_path);
     }
 
@@ -129,6 +137,11 @@ class MB_Zones
 
     static void Edit_The_Tags()
     {
+        List<Zone> zone_data = new List<Zone>();
+        List<int> total_area_counts = new List<int>();
+        List<int> total_fpos_counts = new List<int>();
+        List<string> zone_names = new List<string>();
+
         Console.WriteLine("Beginning tag writing process...");
 
         int zone = -1;
@@ -150,8 +163,15 @@ class MB_Zones
             if (line.Contains("Zone:"))
             {
                 zone++;
+                zone_names.Add(line.Substring(line.IndexOf(' ') + 1).Trim());
+                if (zone != 0)
+                {
+                    total_area_counts.Add(totalAreaCount);
+                    total_fpos_counts.Add(totalFposCount);
+                    zone_data.Add(new Zone { ZoneName = zone_names[zone - 1], AreasCount = total_area_counts[zone - 1], FposCount = total_fpos_counts[zone - 1] });
+                }
                 Console.WriteLine(line.Trim());
-                PatchTag("zone", line.Substring(line.IndexOf(' ') + 1).Trim(), 0, 0);
+                //PatchTag("zone", line.Substring(line.IndexOf(' ') + 1).Trim(), 0, 0);
                 continue;
             }
             else if (line.Contains("Areas:"))
@@ -182,11 +202,11 @@ class MB_Zones
                 if (areaDataCount == 0)
                 {
                     // Add new area
-                    PatchTag("area", line, -1, 0);
+                    //PatchTag("area", line, -1, 0);
                     // Patch area name
                     string fieldPath = $"scenario_struct_definition[0].zones[{zone}].areas[{areaIndex}].name";
                     Console.WriteLine($"patching {line.Trim()}");
-                    PatchTag("area", line.Trim(), 0, totalAreaCount);
+                    //PatchTag("area", line.Trim(), 0, totalAreaCount);
                     areaDataCount++;
                 }
                 else if (areaDataCount == 1)
@@ -194,7 +214,7 @@ class MB_Zones
                     // Patch area flags
                     string fieldPath = $"scenario_struct_definition[0].zones[{zone}].areas[{areaIndex}].area flags";
                     Console.WriteLine("area flags");
-                    PatchTag("area", line.Trim(), 1, totalAreaCount);
+                    //PatchTag("area", line.Trim(), 1, totalAreaCount);
                     areaDataCount++;
                     if (line.Trim() != "0")
                     {
@@ -218,7 +238,7 @@ class MB_Zones
                     // Patch manual reference frame
                     string fieldPath = $"scenario_struct_definition[0].zones[{zone}].areas[{areaIndex}].manual reference frame";
                     Console.WriteLine($"manual ref frame = {line.Trim()}");
-                    PatchTag("area", line.Trim(), 4, totalAreaCount);
+                    //PatchTag("area", line.Trim(), 4, totalAreaCount);
                     areaDataCount = 0;
                     areaIndex++;
                     totalAreaCount++;
@@ -235,7 +255,7 @@ class MB_Zones
                 {
                     // Patch firing position index
                     Console.WriteLine($"firing position {line.Trim()} patch start");
-                    PatchTag("fpos", line.Trim(), 0, totalFposCount);
+                    //PatchTag("fpos", line.Trim(), 0, totalFposCount);
                     fposDataCount++;
                 }
                 else if (fposDataCount == 1)
@@ -243,7 +263,7 @@ class MB_Zones
                     // Patch firing position position
                     string fieldPath = $"scenario_struct_definition[0].zones[{zone}].firing positions[{fposIndex}].position (local)";
                     Console.WriteLine("patching position");
-                    PatchTag("fpos", line.Trim(), 1, totalFposCount);
+                    //PatchTag("fpos", line.Trim(), 1, totalFposCount);
                     fposDataCount++;
                 }
                 else if (fposDataCount == 2)
@@ -258,7 +278,7 @@ class MB_Zones
                     // Patch firing position flags
                     string fieldPath = $"scenario_struct_definition[0].zones[{zone}].firing positions[{fposIndex}].flags";
                     Console.WriteLine("patching flags");
-                    PatchTag("fpos", line.Trim(), 3, totalFposCount);
+                    //PatchTag("fpos", line.Trim(), 3, totalFposCount);
                     if (int.Parse(line.Trim()) >= 90)
                     {
                         fposFlagLineSkip = 4;
@@ -286,7 +306,7 @@ class MB_Zones
                     // Patch firing position area
                     string fieldPath = $"scenario_struct_definition[0].zones[{zone}].firing positions[{fposIndex}].area";
                     Console.WriteLine("patching area");
-                    PatchTag("fpos", line.Trim(), 4, totalFposCount);
+                    //PatchTag("fpos", line.Trim(), 4, totalFposCount);
                     fposDataCount++;
                 }
                 else if (fposDataCount == 5)
@@ -294,7 +314,7 @@ class MB_Zones
                     // Patch firing position cluster index
                     string fieldPath = $"scenario_struct_definition[0].zones[{zone}].firing positions[{fposIndex}].cluster index";
                     Console.WriteLine("patching cluster index");
-                    PatchTag("fpos", line.Trim(), 5, totalFposCount);
+                    //PatchTag("fpos", line.Trim(), 5, totalFposCount);
                     fposDataCount++;
                 }
                 else if (fposDataCount == 6)
@@ -302,13 +322,18 @@ class MB_Zones
                     // Patch firing position normal
                     string fieldPath = $"scenario_struct_definition[0].zones[{zone}].firing positions[{fposIndex}].normal";
                     Console.WriteLine("patching normal");
-                    PatchTag("fpos", line.Trim(), 6, totalFposCount);
+                    //PatchTag("fpos", line.Trim(), 6, totalFposCount);
                     fposDataCount = 0;
                     fposIndex++;
                     totalFposCount++;
                 }
             }
         }
+        // All lines are done, lets add the final zone
+        total_area_counts.Add(totalAreaCount);
+        total_fpos_counts.Add(totalFposCount);
+        zone_data.Add(new Zone { ZoneName = zone_names[zone], AreasCount = total_area_counts[zone], FposCount = total_fpos_counts[zone] });
+        ManagedBlamHandler(zone_data);
     }
 
     // Runs ManagedBlam functions to add the data into the H3 scenario. Part parameter is used to keep track of the sub-fields for area/fpos
@@ -413,6 +438,29 @@ class MB_Zones
                 }
                 tagFile.Save(); // Please god stop doing this
             }
+        }
+    }
+
+    static void ManagedBlamHandler(List<Zone> zone_data)
+    {
+        // Variables
+        string h3ek_path = @"C:\Program Files (x86)\Steam\steamapps\common\H3EK";
+        string scen_path = @"halo_2\levels\singleplayer\04a_gasgiant\04a_gasgiant";
+        var tag_path = Bungie.Tags.TagPath.FromPathAndType(scen_path, "scnr*");
+
+        ManagedBlamSystem.InitializeProject(InitializationType.TagsOnly, h3ek_path);
+
+        using (var tagFile = new Bungie.Tags.TagFile(tag_path))
+        {
+            foreach (var zone in zone_data)
+            {
+                // Add new zone entry
+                int zones_max_index = ((Bungie.Tags.TagFieldBlock)tagFile.Fields[83]).Elements.Count() - 1;
+                ((Bungie.Tags.TagFieldBlock)tagFile.Fields[83]).AddElement(); // 83 is the position of the Zones block
+                var zone_name = (Bungie.Tags.TagFieldElementString)((Bungie.Tags.TagFieldBlock)tagFile.Fields[83]).Elements[zones_max_index + 1].Fields[0];
+                zone_name.Data = zone.ZoneName;
+            }
+            tagFile.Save();
         }
     }
 }
