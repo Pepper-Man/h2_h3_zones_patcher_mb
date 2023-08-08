@@ -378,7 +378,7 @@ class MB_Zones
                 else if (part == 1)
                 {
                     // Add xyz position
-                    var xyz_pos = (Bungie.Tags.TagFieldElementArraySingle)((Bungie.Tags.TagFieldBlock)((Bungie.Tags.TagFieldBlock)tagFile.Fields[83]).Elements[zones_max_index].Fields[3]).Elements[count].Fields[1];
+                    var xyz_pos = (Bungie.Tags.TagFieldElementArraySingle)((Bungie.Tags.TagFieldBlock)((Bungie.Tags.TagFieldBlock)tagFile.Fields[83]).Elements[zones_max_index].Fields[3]).Elements[0].Fields[1];
                     // Splits the string into a float array of xyz coordinates
                     xyz_pos.Data = line.Split(',').Select(valueString => float.TryParse(valueString, out float floatValue) ? floatValue : float.NaN).ToArray();
                 }
@@ -389,25 +389,25 @@ class MB_Zones
                 else if (part == 3)
                 {
                     // Add flags
-                    var fpos_flags = (Bungie.Tags.TagFieldFlags)((Bungie.Tags.TagFieldBlock)((Bungie.Tags.TagFieldBlock)tagFile.Fields[83]).Elements[zones_max_index].Fields[3]).Elements[count].Fields[4];
+                    var fpos_flags = (Bungie.Tags.TagFieldFlags)((Bungie.Tags.TagFieldBlock)((Bungie.Tags.TagFieldBlock)tagFile.Fields[83]).Elements[zones_max_index].Fields[3]).Elements[0].Fields[4];
                     fpos_flags.RawValue = uint.Parse(line);
                 }
                 else if (part == 4)
                 {
                     // Add area reference
-                    var area_ref = (Bungie.Tags.TagFieldBlockIndex)((Bungie.Tags.TagFieldBlock)((Bungie.Tags.TagFieldBlock)tagFile.Fields[83]).Elements[zones_max_index].Fields[3]).Elements[count].Fields[6];
+                    var area_ref = (Bungie.Tags.TagFieldBlockIndex)((Bungie.Tags.TagFieldBlock)((Bungie.Tags.TagFieldBlock)tagFile.Fields[83]).Elements[zones_max_index].Fields[3]).Elements[0].Fields[6];
                     area_ref.Value = int.Parse(line);
                 }
                 else if (part == 5)
                 {
                     // Add cluster index
-                    var cluster_index = (Bungie.Tags.TagFieldElementInteger)((Bungie.Tags.TagFieldBlock)((Bungie.Tags.TagFieldBlock)tagFile.Fields[83]).Elements[zones_max_index].Fields[3]).Elements[count].Fields[7];
+                    var cluster_index = (Bungie.Tags.TagFieldElementInteger)((Bungie.Tags.TagFieldBlock)((Bungie.Tags.TagFieldBlock)tagFile.Fields[83]).Elements[zones_max_index].Fields[3]).Elements[0].Fields[7];
                     cluster_index.Data= int.Parse(line);
                 }
                 else if (part == 6)
                 {
                     // Add normal directions
-                    var normal_dir = (Bungie.Tags.TagFieldElementArraySingle)((Bungie.Tags.TagFieldBlock)((Bungie.Tags.TagFieldBlock)tagFile.Fields[83]).Elements[zones_max_index].Fields[3]).Elements[count].Fields[10];
+                    var normal_dir = (Bungie.Tags.TagFieldElementArraySingle)((Bungie.Tags.TagFieldBlock)((Bungie.Tags.TagFieldBlock)tagFile.Fields[83]).Elements[zones_max_index].Fields[3]).Elements[0].Fields[10];
                     // Splits the string into a float array of xyz coordinates
                     normal_dir.Data = line.Split(',').Select(valueString => float.TryParse(valueString, out float floatValue) ? floatValue : float.NaN).ToArray();
                 }
