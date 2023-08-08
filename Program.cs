@@ -411,7 +411,7 @@ class MB_Zones
                     // Splits the string into a float array of xyz coordinates
                     normal_dir.Data = line.Split(',').Select(valueString => float.TryParse(valueString, out float floatValue) ? floatValue : float.NaN).ToArray();
                 }
-                tagFile.Save();
+                tagFile.Save(); // Please god stop doing this
             }
         }
     }
