@@ -7,11 +7,19 @@ using System.Collections.Generic;
 using Bungie.Tags;
 using System.Runtime.InteropServices;
 
+class Area
+{
+    public string AreaName { get; set; }
+    public string AreaFlags { get; set; }
+    public string AreaRefFrame { get; set; }
+}
+
 class Zone
 {
     public string ZoneName { get; set; }
     public int AreasCount { get; set; }
     public int FposCount { get; set; }
+    public List<Area> Areas { get; set; } = new List<Area>();
 }
 
 
@@ -142,6 +150,9 @@ class MB_Zones
         List<int> total_area_counts = new List<int>();
         List<int> total_fpos_counts = new List<int>();
         List<string> zone_names = new List<string>();
+        List<string> area_names = new List<string>();
+        List<string> area_flags = new List<string>();
+        List<string> area_refs = new List<string>();
 
         Console.WriteLine("Beginning tag writing process...");
 
@@ -169,7 +180,20 @@ class MB_Zones
                 {
                     total_area_counts.Add(totalAreaCount);
                     total_fpos_counts.Add(totalFposCount);
-                    zone_data.Add(new Zone { ZoneName = zone_names[zone - 1], AreasCount = total_area_counts[zone - 1], FposCount = total_fpos_counts[zone - 1] });
+                    List<Area> tempAreasMain = new List<Area>();
+                    int countMain = 0;
+                    foreach (var name in area_names)
+                    {
+                        tempAreasMain.Add(new Area { AreaName = area_names[countMain], AreaFlags = area_flags[countMain], AreaRefFrame = area_refs[countMain] });
+                        countMain++;
+                    }
+                    zone_data.Add(new Zone 
+                    { 
+                        ZoneName = zone_names[zone - 1],
+                        AreasCount = total_area_counts[zone - 1],
+                        FposCount = total_fpos_counts[zone - 1],
+                        Areas = tempAreasMain
+                    });
                 }
                 Console.WriteLine(line.Trim());
                 //PatchTag("zone", line.Substring(line.IndexOf(' ') + 1).Trim(), 0, 0);
@@ -207,6 +231,7 @@ class MB_Zones
                     // Patch area name
                     string fieldPath = $"scenario_struct_definition[0].zones[{zone}].areas[{areaIndex}].name";
                     Console.WriteLine($"patching {line.Trim()}");
+                    area_names.Add(line.Trim());
                     //PatchTag("area", line.Trim(), 0, totalAreaCount);
                     areaDataCount++;
                 }
@@ -215,6 +240,7 @@ class MB_Zones
                     // Patch area flags
                     string fieldPath = $"scenario_struct_definition[0].zones[{zone}].areas[{areaIndex}].area flags";
                     Console.WriteLine("area flags");
+                    area_flags.Add(line.Trim());
                     //PatchTag("area", line.Trim(), 1, totalAreaCount);
                     areaDataCount++;
                     if (line.Trim() != "0")
@@ -239,6 +265,7 @@ class MB_Zones
                     // Patch manual reference frame
                     string fieldPath = $"scenario_struct_definition[0].zones[{zone}].areas[{areaIndex}].manual reference frame";
                     Console.WriteLine($"manual ref frame = {line.Trim()}");
+                    area_refs.Add(line.Trim());
                     //PatchTag("area", line.Trim(), 4, totalAreaCount);
                     areaDataCount = 0;
                     areaIndex++;
@@ -333,7 +360,20 @@ class MB_Zones
         // All lines are done, lets add the final zone
         total_area_counts.Add(totalAreaCount);
         total_fpos_counts.Add(totalFposCount);
-        zone_data.Add(new Zone { ZoneName = zone_names[zone], AreasCount = total_area_counts[zone], FposCount = total_fpos_counts[zone] });
+        List<Area> tempAreas = new List<Area>();
+        int count = 0;
+        foreach (var name in area_names)
+        {
+            tempAreas.Add(new Area { AreaName = area_names[count], AreaFlags = area_flags[count], AreaRefFrame = area_refs[count] });
+            count++;
+        }
+        zone_data.Add(new Zone
+        {
+            ZoneName = zone_names[zone],
+            AreasCount = total_area_counts[zone],
+            FposCount = total_fpos_counts[zone],
+            Areas = tempAreas
+        });
         ManagedBlamHandler(zone_data);
     }
 
@@ -473,7 +513,8 @@ class MB_Zones
                 for (int k = 0; k < loopcount; k++)
                 {
                     ((Bungie.Tags.TagFieldBlock)((Bungie.Tags.TagFieldBlock)tagFile.Fields[83]).Elements[j].Fields[4]).AddElement();
-                    
+                    var area_name = (Bungie.Tags.TagFieldElementString)((Bungie.Tags.TagFieldBlock)((Bungie.Tags.TagFieldBlock)tagFile.Fields[83]).Elements[j].Fields[4]).Elements[k].Fields[0];
+                    area_name.Data = zone.Areas[k].AreaName;
                 }
                 j++;
             }
@@ -489,6 +530,8 @@ class MB_Zones
                 }
                 x++;
             }
+
+            // Aaaaand save everything
             tagFile.Save();
         }
     }
