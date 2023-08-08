@@ -35,17 +35,90 @@ class MB_Zones
 {
     static void Main(string[] args)
     {
-        // Variables
-        string h3ek_path = @"C:\Program Files (x86)\Steam\steamapps\common\H3EK";
-        string xml_path = @"G:\Steam\steamapps\common\H2EK\04a_gasgiant.xml";
+        string scen_path = "";
+        string xml_path = "";
+
+        Console.WriteLine("H2 to H3 Scenario Zones Patcher by PepperMan\n\n");
+        while (true)
+        {
+            Console.WriteLine("Please enter the path to the H3 scenario file you wish to patch:");
+            scen_path = Console.ReadLine().Trim('"');
+            if (scen_path.EndsWith(".scenario"))
+            {
+                if (scen_path.Contains("H3EK"))
+                {
+                    break;
+                }
+                else
+                {
+                    Console.WriteLine("\nLooks like a scenario tag, but doesn't seem to be in the H3EK directory. Please try again.");
+                }
+            }
+            else
+            {
+                Console.WriteLine("\nFile does not look like a .scenario tag. Please try again.");
+            }
+        }
+
+        while (true)
+        {
+            Console.WriteLine("\nPlease enter the path to an exported H2 scenario XML file.\nThis must be the full path with file extension - I *will* crash if this path is invalid:");
+            xml_path = Console.ReadLine().Trim('"');
+            if (xml_path.EndsWith(".xml") || xml_path.EndsWith(".txt")) // H2 exports as .txt by default, but we'll let .xml slide too
+            {
+                break;
+            }
+            else
+            {
+                Console.WriteLine("\nFile doesn't look like a .txt or .xml file. Please try again.");
+            }
+        }
+
+        string h3ek_path = scen_path.Substring(0, scen_path.IndexOf("H3EK") + "H3EK".Length);
 
         ManagedBlamSystem.InitializeProject(InitializationType.TagsOnly, h3ek_path);
-        Convert_XML(xml_path);
+        Convert_XML(xml_path, h3ek_path, scen_path);
     }
 
-    static void Convert_XML(string xml_path)
+    static void Convert_XML(string xml_path, string h3ek_path, string scen_path)
     {
-        Console.WriteLine("Beginning XML Conversion:\n\n");
+        Console.WriteLine("\nBeginning XML Conversion:\n");
+
+        string newFilePath = Path.Combine(Directory.GetCurrentDirectory(), "modified_input.xml");
+
+        try
+        {
+            string[] lines = File.ReadAllLines(xml_path);
+            bool removeLines = false;
+
+            using (StreamWriter writer = new StreamWriter(newFilePath))
+            {
+                foreach (string line in lines)
+                {
+                    if (line.Contains("<block name=\"source files\">"))
+                    {
+                        removeLines = true;
+                        writer.WriteLine(line);
+                    }
+                    else if (line.Contains("<block name=\"scripting data\">"))
+                    {
+                        removeLines = false;
+                    }
+                    else if (!removeLines)
+                    {
+                        writer.WriteLine(line);
+                    }
+                }
+            }
+
+            Console.WriteLine("Modified file saved successfully.\n\nPreparing to patch tag data.\n\nLoaded zones:\n");
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine("An error occurred: " + ex.Message);
+        }
+
+        xml_path = newFilePath;
 
         XmlDocument scenfile = new XmlDocument();
         scenfile.Load(xml_path);
@@ -79,6 +152,8 @@ class MB_Zones
                 }
             }
         }
+
+        Console.WriteLine("\nBegin patching data:\n");
 
         // Temp file creation/wiping
 
@@ -149,10 +224,10 @@ class MB_Zones
                 i++;
             }
         }
-        Edit_The_Tags();
+        Edit_The_Tags(h3ek_path, scen_path);
     }
 
-    static void Edit_The_Tags()
+    static void Edit_The_Tags(string h3ek_path, string scen_path)
     {
         List<Zone> zone_data = new List<Zone>();
         List<int> total_area_counts = new List<int>();
@@ -416,17 +491,16 @@ class MB_Zones
             Areas = tempAreas,
             Fpos = tempFpos
         });
-        ManagedBlamHandler(zone_data);
+        ManagedBlamHandler(zone_data, h3ek_path, scen_path);
     }
 
-    static void ManagedBlamHandler(List<Zone> zone_data)
+    static void ManagedBlamHandler(List<Zone> zone_data, string h3ek_path, string scen_path)
     {
         // Variables
-        string h3ek_path = @"C:\Program Files (x86)\Steam\steamapps\common\H3EK";
-        string scen_path = @"halo_2\levels\singleplayer\04a_gasgiant\04a_gasgiant";
-        var tag_path = Bungie.Tags.TagPath.FromPathAndType(scen_path, "scnr*");
+        var tag_path = Bungie.Tags.TagPath.FromPathAndType(Path.ChangeExtension(scen_path.Split(new[] { "\\tags\\" }, StringSplitOptions.None).Last(), null).Replace('\\', Path.DirectorySeparatorChar), "scnr*");
 
         ManagedBlamSystem.InitializeProject(InitializationType.TagsOnly, h3ek_path);
+        Console.WriteLine("\nSaving tag...\n");
 
         using (var tagFile = new Bungie.Tags.TagFile(tag_path))
         {
@@ -504,6 +578,9 @@ class MB_Zones
             }
             // Aaaaand save everything in one go
             tagFile.Save();
+
+            Console.WriteLine("All zones, areas and firing positions have been successfully transferred into the H3 scenario!\nPress enter to exit.");
+            Console.ReadLine();
         }
     }
 }
