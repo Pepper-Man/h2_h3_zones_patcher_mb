@@ -515,9 +515,21 @@ class MB_Zones
                 int loopcount = zone.AreasCount;
                 for (int k = 0; k < loopcount; k++)
                 {
+                    // Name
                     ((Bungie.Tags.TagFieldBlock)((Bungie.Tags.TagFieldBlock)tagFile.Fields[83]).Elements[j].Fields[4]).AddElement();
                     var area_name = (Bungie.Tags.TagFieldElementString)((Bungie.Tags.TagFieldBlock)((Bungie.Tags.TagFieldBlock)tagFile.Fields[83]).Elements[j].Fields[4]).Elements[k].Fields[0];
                     area_name.Data = zone.Areas[k].AreaName;
+
+                    // Flags
+                    var area_flags = (Bungie.Tags.TagFieldFlags)((Bungie.Tags.TagFieldBlock)((Bungie.Tags.TagFieldBlock)tagFile.Fields[83]).Elements[j].Fields[4]).Elements[k].Fields[1];
+                    area_flags.RawValue = uint.Parse(zone.Areas[k].AreaFlags);
+
+                    // Reference Frame
+                    if (zone.Areas[k].AreaRefFrame != "0")
+                    {
+                        var reference_frame = (Bungie.Tags.TagFieldBlockIndex)((Bungie.Tags.TagFieldBlock)((Bungie.Tags.TagFieldBlock)tagFile.Fields[83]).Elements[j].Fields[4]).Elements[k].Fields[9];
+                        reference_frame.Value = int.Parse(zone.Areas[k].AreaRefFrame);
+                    }
                 }
                 j++;
             }
