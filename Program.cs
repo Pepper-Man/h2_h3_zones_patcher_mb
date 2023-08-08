@@ -5,6 +5,7 @@ using System.Xml;
 using System.Linq;
 using System.Collections.Generic;
 using Bungie.Tags;
+using System.Runtime.InteropServices;
 
 class Zone
 {
@@ -452,13 +453,43 @@ class MB_Zones
 
         using (var tagFile = new Bungie.Tags.TagFile(tag_path))
         {
+            int zones_max_index = ((Bungie.Tags.TagFieldBlock)tagFile.Fields[83]).Elements.Count() - 1;
+
+            // Add all zone entries
+            int i = 0;
             foreach (var zone in zone_data)
             {
-                // Add new zone entry
-                int zones_max_index = ((Bungie.Tags.TagFieldBlock)tagFile.Fields[83]).Elements.Count() - 1;
                 ((Bungie.Tags.TagFieldBlock)tagFile.Fields[83]).AddElement(); // 83 is the position of the Zones block
-                var zone_name = (Bungie.Tags.TagFieldElementString)((Bungie.Tags.TagFieldBlock)tagFile.Fields[83]).Elements[zones_max_index + 1].Fields[0];
+                var zone_name = (Bungie.Tags.TagFieldElementString)((Bungie.Tags.TagFieldBlock)tagFile.Fields[83]).Elements[i].Fields[0];
                 zone_name.Data = zone.ZoneName;
+                i++;
+            }
+            tagFile.Save();
+
+            // Add all area entries
+            int j = 0;
+            foreach (var zone in zone_data)
+            {
+                int loopcount = zone.AreasCount;
+                for (int k = 0; k < loopcount; k++)
+                {
+                    ((Bungie.Tags.TagFieldBlock)((Bungie.Tags.TagFieldBlock)tagFile.Fields[83]).Elements[j].Fields[4]).AddElement();
+                    
+                }
+                j++;
+            }
+            tagFile.Save();
+
+            // Add all firing position entries
+            int x = 0;
+            foreach (var zone in zone_data)
+            {
+                int loopcount = zone.FposCount;
+                for (int y = 0; y < loopcount; y++)
+                {
+                    ((Bungie.Tags.TagFieldBlock)((Bungie.Tags.TagFieldBlock)tagFile.Fields[83]).Elements[x].Fields[3]).AddElement();
+                }
+                x++;
             }
             tagFile.Save();
         }
