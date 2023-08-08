@@ -206,6 +206,9 @@ class MB_Zones
                 areaIndex = 0;
                 areaDataCount = 0;
                 totalAreaCount = 0;
+                area_names.Clear();
+                area_flags.Clear();
+                area_refs.Clear();
                 continue;
             }
             else if (line.Contains("Firing Positions:"))
