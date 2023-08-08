@@ -464,7 +464,6 @@ class MB_Zones
                 zone_name.Data = zone.ZoneName;
                 i++;
             }
-            tagFile.Save();
 
             // Add all area entries
             int j = 0;
@@ -478,7 +477,6 @@ class MB_Zones
                 }
                 j++;
             }
-            tagFile.Save();
 
             // Add all firing position entries
             int x = 0;
