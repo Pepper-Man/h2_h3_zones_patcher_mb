@@ -33,10 +33,10 @@ class Zone
 
 class MB_Zones
 {
-    static void Main(string[] args)
+    static void Main()
     {
-        string scen_path = "";
-        string xml_path = "";
+        string scen_path;
+        string xml_path;
 
         Console.WriteLine("H2 to H3 Scenario Zones Patcher by PepperMan\n\n");
         while (true)
